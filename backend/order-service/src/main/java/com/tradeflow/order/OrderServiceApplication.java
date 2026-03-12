@@ -1,4 +1,4 @@
-package com.tradeflow.order_service;
+package com.tradeflow.order;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
