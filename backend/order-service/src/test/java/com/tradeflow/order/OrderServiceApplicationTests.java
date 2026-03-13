@@ -1,4 +1,4 @@
-package com.tradeflow.order_service;
+package com.tradeflow.order;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
