@@ -1,9 +1,9 @@
 package com.tradeflow.order.usecase;
-
 import com.tradeflow.order.domain.entity.Buyer;
 import com.tradeflow.order.domain.entity.Order;
 import com.tradeflow.order.domain.entity.OrderItem;
 import com.tradeflow.order.domain.entity.Supplier;
+import com.tradeflow.order.domain.exception.BusinessException;
 import com.tradeflow.order.domain.valueobject.Money;
 import com.tradeflow.order.repository.BuyerRepository;
 import com.tradeflow.order.repository.OrderRepository;
@@ -37,7 +37,7 @@ public class CreateOrderUseCase {
         }
 
         Buyer buyer = buyerRepository.findByIdAndTenantId(request.buyerId(), tenantId)
-                .orElseThrow(() -> new IllegalArgumentException("Buyer not found or unauthorized"));
+                .orElseThrow(() -> new BusinessException("Buyer not found or unauthorized"));
 
         Supplier supplier = supplierRepository.findByIdAndTenantId(request.supplierId(), tenantId)
                 .orElseThrow(() -> new IllegalArgumentException("Supplier not found or unauthorized"));
