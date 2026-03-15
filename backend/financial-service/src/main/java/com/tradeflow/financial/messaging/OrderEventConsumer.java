@@ -17,6 +17,7 @@ import java.util.UUID;
 public class OrderEventConsumer {
 
     private final BalanceService balanceService;
+    private final OrderEventPublisher eventPublisher;
     private final ObjectMapper objectMapper;
 
     @KafkaListener(topics = "order.created", groupId = "financial-service")
@@ -35,6 +36,8 @@ public class OrderEventConsumer {
                     buyerId, "BUYER", orderId,
                     BigDecimal.valueOf(totalAmount)
             );
+
+            eventPublisher.publishOrderValidated(orderId, buyerId);
 
             log.info("Balance reserved successfully for order: {}", orderId);
 
