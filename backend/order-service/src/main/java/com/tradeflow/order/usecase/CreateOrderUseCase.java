@@ -1,10 +1,12 @@
 package com.tradeflow.order.usecase;
+
 import com.tradeflow.order.domain.entity.Buyer;
 import com.tradeflow.order.domain.entity.Order;
 import com.tradeflow.order.domain.entity.OrderItem;
 import com.tradeflow.order.domain.entity.Supplier;
 import com.tradeflow.order.domain.exception.BusinessException;
 import com.tradeflow.order.domain.valueobject.Money;
+import com.tradeflow.order.messaging.OrderEventPublisher;
 import com.tradeflow.order.repository.BuyerRepository;
 import com.tradeflow.order.repository.OrderRepository;
 import com.tradeflow.order.repository.SupplierRepository;
@@ -25,11 +27,11 @@ public class CreateOrderUseCase {
     private final OrderRepository orderRepository;
     private final BuyerRepository buyerRepository;
     private final SupplierRepository supplierRepository;
+    private final OrderEventPublisher eventPublisher;
 
     @Transactional
     public OrderResponse execute(CreateOrderRequest request, String tenantId) {
 
-        // Idempotency check — retorna a ordem existente se já foi processada
         var existing = orderRepository.findByIdempotencyKey(request.idempotencyKey());
         if (existing.isPresent()) {
             log.info("Idempotent request detected for key: {}", request.idempotencyKey());
@@ -40,7 +42,7 @@ public class CreateOrderUseCase {
                 .orElseThrow(() -> new BusinessException("Buyer not found or unauthorized"));
 
         Supplier supplier = supplierRepository.findByIdAndTenantId(request.supplierId(), tenantId)
-                .orElseThrow(() -> new IllegalArgumentException("Supplier not found or unauthorized"));
+                .orElseThrow(() -> new BusinessException("Supplier not found or unauthorized"));
 
         Order order = new Order(buyer, supplier, request.idempotencyKey(), tenantId);
 
@@ -57,6 +59,7 @@ public class CreateOrderUseCase {
         });
 
         Order saved = orderRepository.save(order);
+        eventPublisher.publishOrderCreated(OrderResponse.from(saved));
         log.info("Order created with id: {} for tenant: {}", saved.getId(), tenantId);
 
         return OrderResponse.from(saved);
