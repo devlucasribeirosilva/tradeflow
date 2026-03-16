@@ -1,5 +1,6 @@
 package com.tradeflow.order.web.handler;
-
+import org.springframework.http.ResponseEntity;
+import jakarta.servlet.http.HttpServletRequest;
 import com.tradeflow.order.domain.exception.BusinessException;
 import com.tradeflow.order.domain.exception.OrderNotFoundException;
 import lombok.extern.slf4j.Slf4j;
@@ -9,6 +10,8 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.security.authorization.AuthorizationDeniedException;
+
 
 import java.net.URI;
 import java.time.Instant;
@@ -18,6 +21,18 @@ import java.util.stream.Collectors;
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(AuthorizationDeniedException.class)
+    public ResponseEntity<ProblemDetail> handleAuthorizationDenied(
+            AuthorizationDeniedException ex, HttpServletRequest request) {
+        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.FORBIDDEN);
+        problem.setType(URI.create("/errors/forbidden"));
+        problem.setTitle("Forbidden");
+        problem.setDetail("Access denied");
+        problem.setInstance(URI.create(request.getRequestURI()));
+        problem.setProperty("timestamp", Instant.now());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(problem);
+    }
 
     @ExceptionHandler(OrderNotFoundException.class)
     public ProblemDetail handleOrderNotFound(OrderNotFoundException ex) {

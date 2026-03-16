@@ -1,5 +1,7 @@
 package com.tradeflow.order.domain.entity;
-
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.ParamDef;
 import com.tradeflow.order.domain.enums.OrderStatus;
 import com.tradeflow.order.domain.valueobject.Money;
 import jakarta.persistence.*;
@@ -11,10 +13,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
-@Entity
-@Table(name = "orders")
+@FilterDef(name = "tenantFilter", parameters = @ParamDef(name = "tenantId", type = String.class))
+@Filter(name = "tenantFilter", condition = "tenant_id = :tenantId")
 @Getter
 @NoArgsConstructor
+@Entity
+@Table(name = "orders")
 public class Order {
 
     @Id

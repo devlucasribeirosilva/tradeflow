@@ -1,6 +1,6 @@
 package com.tradeflow.order.web.controller;
 import org.springframework.security.core.Authentication;
-
+import org.springframework.security.access.prepost.PreAuthorize;
 import com.tradeflow.order.usecase.CreateOrderUseCase;
 import com.tradeflow.order.usecase.GetOrderUseCase;
 import com.tradeflow.order.web.dto.CreateOrderRequest;
@@ -21,6 +21,7 @@ public class OrderController {
     private final CreateOrderUseCase createOrderUseCase;
     private final GetOrderUseCase getOrderUseCase;
 
+    @PreAuthorize("hasAnyRole('BUYER', 'ADMIN')")
     @PostMapping
     public ResponseEntity<OrderResponse> create(
             @Valid @RequestBody CreateOrderRequest request,
@@ -31,6 +32,7 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    @PreAuthorize("hasAnyRole('BUYER', 'SUPPLIER', 'ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<OrderResponse> findById(
             @PathVariable UUID id,
