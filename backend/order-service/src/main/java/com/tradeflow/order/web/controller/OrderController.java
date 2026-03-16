@@ -1,4 +1,5 @@
 package com.tradeflow.order.web.controller;
+import org.springframework.security.core.Authentication;
 
 import com.tradeflow.order.usecase.CreateOrderUseCase;
 import com.tradeflow.order.usecase.GetOrderUseCase;
@@ -23,8 +24,9 @@ public class OrderController {
     @PostMapping
     public ResponseEntity<OrderResponse> create(
             @Valid @RequestBody CreateOrderRequest request,
-            @RequestHeader("X-Tenant-Id") String tenantId
+            Authentication authentication
     ) {
+        String tenantId = (String) authentication.getDetails();
         OrderResponse response = createOrderUseCase.execute(request, tenantId);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -32,8 +34,9 @@ public class OrderController {
     @GetMapping("/{id}")
     public ResponseEntity<OrderResponse> findById(
             @PathVariable UUID id,
-            @RequestHeader("X-Tenant-Id") String tenantId
+            Authentication authentication
     ) {
+        String tenantId = (String) authentication.getDetails();
         OrderResponse response = getOrderUseCase.execute(id, tenantId);
         return ResponseEntity.ok(response);
     }
