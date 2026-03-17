@@ -1,5 +1,4 @@
 package com.tradeflow.financial.service;
-
 import com.tradeflow.financial.domain.entity.Account;
 import com.tradeflow.financial.domain.entity.BalanceTransaction;
 import com.tradeflow.financial.repository.AccountRepository;
@@ -19,6 +18,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class BalanceService {
 
+    private final DistributedLockService distributedLockService;
     private final AccountRepository accountRepository;
     private final BalanceTransactionRepository transactionRepository;
     private final StringRedisTemplate redisTemplate;
@@ -45,22 +45,27 @@ public class BalanceService {
 
     @Transactional
     public void reserveBalance(UUID ownerId, String ownerType, UUID orderId, BigDecimal amount) {
-        Account account = accountRepository
-                .findByOwnerIdAndOwnerTypeWithLock(ownerId, ownerType)
-                .orElseThrow(() -> new IllegalArgumentException("Account not found: " + ownerId));
+        String lockValue = distributedLockService.acquireLock(ownerId);
+        try {
+            Account account = accountRepository
+                    .findByOwnerIdAndOwnerTypeWithLock(ownerId, ownerType)
+                    .orElseThrow(() -> new IllegalArgumentException("Account not found: " + ownerId));
 
-        BigDecimal balanceBefore = account.getBalance();
-        account.debit(amount);
+            BigDecimal balanceBefore = account.getBalance();
+            account.debit(amount);
 
-        transactionRepository.save(new BalanceTransaction(
-                account.getId(), orderId, "DEBIT",
-                amount, balanceBefore, account.getBalance()
-        ));
+            transactionRepository.save(new BalanceTransaction(
+                    account.getId(), orderId, "DEBIT",
+                    amount, balanceBefore, account.getBalance()
+            ));
 
-        redisTemplate.delete(String.format(BALANCE_CACHE_KEY, ownerId));
+            redisTemplate.delete(String.format(BALANCE_CACHE_KEY, ownerId));
 
-        log.info("Balance reserved: {} for order: {} — new balance: {}",
-                amount, orderId, account.getBalance());
+            log.info("Balance reserved: {} for order: {} — new balance: {}",
+                    amount, orderId, account.getBalance());
+        } finally {
+            distributedLockService.releaseLock(ownerId, lockValue);
+        }
     }
 
     @Transactional
