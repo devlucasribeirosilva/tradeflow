@@ -1,5 +1,5 @@
 package com.tradeflow.order.repository;
-
+import java.util.List;
 import com.tradeflow.order.domain.entity.Order;
 import com.tradeflow.order.domain.enums.OrderStatus;
 import org.springframework.data.domain.Page;
@@ -20,6 +20,7 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
     Optional<Order> findByIdAndTenantId(UUID id, String tenantId);
 
     Page<Order> findAllByTenantId(String tenantId, Pageable pageable);
+    List<Order> findAllByTenantId(String tenantId);
 
     @Query("SELECT COUNT(o) > 0 FROM Order o WHERE o.idempotencyKey = :key")
     boolean existsByIdempotencyKey(@Param("key") String idempotencyKey);
