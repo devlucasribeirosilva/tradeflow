@@ -1,0 +1,14 @@
+apiVersion: v2
+name: tradeflow
+description: B2B Purchase Order Platform with distributed processing
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+keywords:
+  - b2b
+  - orders
+  - kafka
+  - spring-boot
+maintainers:
+  - name: Lucas Ribeiro
+    email: devlucasribeirosilva@github.com

@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: financial-service
+  namespace: {{ .Values.global.namespace }}
+spec:
+  replicas: {{ .Values.financialService.replicas }}
+  selector:
+    matchLabels:
+      app: financial-service
+  template:
+    metadata:
+      labels:
+        app: financial-service
+    spec:
+      containers:
+        - name: financial-service
+          image: "{{ .Values.financialService.image }}:{{ .Values.financialService.tag }}"
+          ports:
+            - containerPort: {{ .Values.financialService.port }}
+          envFrom:
+            - configMapRef:
+                name: tradeflow-config
+            - secretRef:
+                name: tradeflow-secret
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:postgresql://postgres-service:5432/{{ .Values.postgres.database }}?currentSchema=financial"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: financial-service
+  namespace: {{ .Values.global.namespace }}
+spec:
+  selector:
+    app: financial-service
+  ports:
+    - port: {{ .Values.financialService.port }}
+      targetPort: {{ .Values.financialService.port }}

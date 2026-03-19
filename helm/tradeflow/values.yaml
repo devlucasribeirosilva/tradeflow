@@ -1,0 +1,38 @@
+global:
+  namespace: tradeflow
+
+postgres:
+  image: postgres:16-alpine
+  database: tradeflow
+  username: tradeflow
+  password: tradeflow123
+
+redis:
+  image: redis:7-alpine
+
+kafka:
+  image: confluentinc/cp-kafka:7.6.0
+  zookeeperImage: confluentinc/cp-zookeeper:7.6.0
+
+orderService:
+  image: tradeflow-order-service
+  tag: latest
+  replicas: 2
+  port: 8080
+  jwt:
+    secret: TradeFlowSuperSecretKeyForJWTSigningMustBe256BitsLongAtLeast
+    expiration: "3600000"
+    refreshExpiration: "604800000"
+
+financialService:
+  image: tradeflow-financial-service
+  tag: latest
+  replicas: 2
+  port: 8081
+
+frontend:
+  image: tradeflow-frontend
+  tag: latest
+  replicas: 1
+  port: 3000
+  nodePort: 30000
