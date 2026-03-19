@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 interface OrderItem {
@@ -39,7 +39,7 @@ export default function DashboardPage() {
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState('');
 
-  const fetchOrders = useCallback(async () => {
+  async function fetchOrders() {
     setLoading(true);
     const res = await fetch('/api/orders');
     if (res.status === 401) {
@@ -49,11 +49,12 @@ export default function DashboardPage() {
     const data = await res.json();
     setOrders(Array.isArray(data) ? data : []);
     setLoading(false);
-  }, [router]);
+  }
 
   useEffect(() => {
     fetchOrders();
-  }, [fetchOrders]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function handleLogout() {
     await fetch('/api/auth/logout', { method: 'POST' });
@@ -96,7 +97,6 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-gray-100 p-8">
       <div className="max-w-5xl mx-auto">
 
-        {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-800">TradeFlow</h1>
@@ -110,7 +110,6 @@ export default function DashboardPage() {
           </button>
         </div>
 
-        {/* Actions */}
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6 flex items-center justify-between">
           <div>
             <h2 className="text-lg font-semibold text-gray-700">Ordens</h2>
@@ -134,14 +133,12 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Error */}
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
             <p className="text-red-600 text-sm">{error}</p>
           </div>
         )}
 
-        {/* Orders Table */}
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
           {loading && orders.length === 0 ? (
             <div className="p-12 text-center text-gray-400">Carregando ordens...</div>
