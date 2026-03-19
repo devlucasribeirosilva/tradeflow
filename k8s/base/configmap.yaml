@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tradeflow-config
+  namespace: tradeflow
+data:
+  SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres-service:5432/tradeflow"
+  SPRING_KAFKA_BOOTSTRAP_SERVERS: "kafka-service:9092"
+  SPRING_DATA_REDIS_HOST: "redis-service"
+  SPRING_DATA_REDIS_PORT: "6379"
+  ORDER_SERVICE_URL: "http://order-service:8080"
